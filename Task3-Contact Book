@@ -1,0 +1,91 @@
+import sqlite3
+
+# Database setup
+conn = sqlite3.connect('contacts.db')
+cursor = conn.cursor()
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS contacts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        phone_number TEXT,
+        email TEXT,
+        address TEXT
+    )
+''')
+conn.commit()
+
+# Function to add a new contact
+def add_contact(name, phone_number, email, address):
+    cursor.execute('INSERT INTO contacts (name, phone_number, email, address) VALUES (?, ?, ?, ?)',
+                   (name, phone_number, email, address))
+    conn.commit()
+    print("Contact added successfully.")
+
+# Function to view all contacts
+def view_contacts():
+    cursor.execute('SELECT name, phone_number FROM contacts')
+    contacts = cursor.fetchall()
+    for contact in contacts:
+        print(f"{contact[0]} - {contact[1]}")
+
+# Function to search for contacts
+def search_contacts(query):
+    cursor.execute('SELECT name, phone_number FROM contacts WHERE name LIKE ? OR phone_number LIKE ?',
+                   ('%' + query + '%', '%' + query + '%'))
+    contacts = cursor.fetchall()
+    for contact in contacts:
+        print(f"{contact[0]} - {contact[1]}")
+
+# Function to update a contact
+def update_contact(contact_id, name, phone_number, email, address):
+    cursor.execute('UPDATE contacts SET name=?, phone_number=?, email=?, address=? WHERE id=?',
+                   (name, phone_number, email, address, contact_id))
+    conn.commit()
+    print("Contact updated successfully.")
+
+# Function to delete a contact
+def delete_contact(contact_id):
+    cursor.execute('DELETE FROM contacts WHERE id=?', (contact_id,))
+    conn.commit()
+    print("Contact deleted successfully.")
+
+# Main menu
+while True:
+    print("\nContact Book Menu:")
+    print("1. Add Contact")
+    print("2. View Contacts")
+    print("3. Search Contacts")
+    print("4. Update Contact")
+    print("5. Delete Contact")
+    print("6. Quit")
+    
+    choice = input("Enter your choice: ")
+
+    if choice == '1':
+        name = input("Enter name: ")
+        phone_number = input("Enter phone number: ")
+        email = input("Enter email: ")
+        address = input("Enter address: ")
+        add_contact(name, phone_number, email, address)
+    elif choice == '2':
+        view_contacts()
+    elif choice == '3':
+        query = input("Enter name or phone number to search: ")
+        search_contacts(query)
+    elif choice == '4':
+        contact_id = input("Enter the ID of the contact to update: ")
+        name = input("Enter new name: ")
+        phone_number = input("Enter new phone number: ")
+        email = input("Enter new email: ")
+        address = input("Enter new address: ")
+        update_contact(contact_id, name, phone_number, email, address)
+    elif choice == '5':
+        contact_id = input("Enter the ID of the contact to delete: ")
+        delete_contact(contact_id)
+    elif choice == '6':
+        break
+    else:
+        print("Invalid choice. Please try again.")
+
+# Close the database connection when done
+conn.close()
